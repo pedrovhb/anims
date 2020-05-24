@@ -36,6 +36,7 @@ class RenderedCode:
 
         self._render_lines()
         self._adjust_size()
+        self._max_line_width = 0
 
     @classmethod
     def from_file(cls, file_path, font_size=48, image_pad=12, scale=0.15):
@@ -92,6 +93,7 @@ class RenderedCodeWithHighlight(RenderedCode):
     def __init__(
             self, code, font_size=48, image_pad=12, scale=0.15, use_line_numbers=True
     ):
+        self.highlight_rect = Rectangle()
         super(RenderedCodeWithHighlight, self).__init__(
             code,
             font_size=font_size,
@@ -100,49 +102,24 @@ class RenderedCodeWithHighlight(RenderedCode):
             use_line_numbers=use_line_numbers,
         )
 
-        self.highlight_rect = Rectangle(
-            width=self.group.get_width(),
-            height=self.line_mobjects[0].get_height()
-                   * self.HIGHLIGHT_RECT_HEIGHT_CONSTANT,
-        )
+        self.highlight_rect.set_height(self.line_mobjects[0].get_height() * self.HIGHLIGHT_RECT_HEIGHT_CONSTANT)
+        self.highlight_rect.set_width(self.group.get_width(), stretch=True)
 
         self.highlight_rect.set_color(self.HIGHLIGHT_COLOR)
         self.highlight_rect.set_fill(self.HIGHLIGHT_COLOR, 1)
 
-        self.group.add(self.highlight_rect)
+        # self.group.add(self.highlight_rect)
         self.highlight_rect.align_to(self.group, LEFT)
         self.highlight_rect.align_to(self.line_mobjects[0], DOWN)
 
+    def _adjust_size(self):
+        self.highlight_rect.align_to(self.group, LEFT)
+        super()._adjust_size()
+
     def animate_highlight_line(self, line_number):
         line_index = line_number - 1
+        self.highlight_rect.align_to(self.group, LEFT)
         return ApplyFunction(
             lambda ob: ob.align_to(self.line_mobjects[line_index], DOWN),
             self.highlight_rect,
         )
-
-
-class VariablesTracker(RenderedCodeWithHighlight):
-    def __init__(self, variables: dict, font_size=48, image_pad=12, scale=0.15):
-        self.variables = variables
-        code = ""
-        for var in self.variables:
-            code += self._text_for_var(var) + "\n"
-
-        super().__init__(
-            code,
-            font_size=font_size,
-            image_pad=image_pad,
-            scale=scale,
-            use_line_numbers=False,
-        )
-
-        self.highlight_rect.set_opacity(0)
-
-    def _text_for_var(self, var_name):
-        var_value = self.variables[var_name]
-        return f"{var_name} = {var_value}"
-
-    def update_variable(self, variable):
-        list(self.variables.items())
-
-    # def animate_variable_update(self):

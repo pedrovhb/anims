@@ -111,4 +111,5 @@ class DraculaStyle(Style):
 
     @staticmethod
     def lower():
+        # Hack for manim to not complain
         return DraculaStyle
