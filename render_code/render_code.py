@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from manim.imports import *
+from manim import *
 from pygments import highlight
 from pygments.lexers.python import Python3Lexer
 
@@ -68,6 +68,9 @@ class RenderedCode:
         file_name = hashlib.md5(line.encode()).hexdigest()
         file_name += self.FILE_EXT
         file_path = os.path.join(IMAGES_ROOT, file_name)
+
+        if os.path.isfile(file_path):
+            return file_path
 
         lexer = self.lexer
         formatter = TransparentImageFormatter(

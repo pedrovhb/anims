@@ -1,6 +1,6 @@
 from typing import Optional
 
-from manim.imports import *
+from manim import *
 
 from render_code import RenderedCodeWithHighlight
 

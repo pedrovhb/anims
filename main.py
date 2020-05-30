@@ -1,6 +1,6 @@
 import random
 
-from manim.imports import *
+from manim import *
 
 SCALE = 1.8
 

@@ -1,4 +1,4 @@
-from manim.imports import *
+from manim import *
 
 from render_code import RenderedCodeWithHighlight, VariablesTracker
 
@@ -52,9 +52,12 @@ class BubbleSort(Scene):
                     self.play(code.animate_highlight_line(9))
                     self.play(*variables.update_variable(self, VAR_shuffled_array, shuffled_arr))
 
+                return
+
             self.play(code.animate_highlight_line(11))
             if not swapped:
                 self.play(code.animate_highlight_line(12))
                 break
+            return
 
         self.wait(2)
