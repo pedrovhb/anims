@@ -7,8 +7,12 @@ from structures import ListElement
 
 class AnimatedList:
     DISTANCE_BETWEEN_ELS = RIGHT * 0.3
-    SWAP_NONADJACENT_Y_CHANGE = 1
-    SWAP_NONADJACENT_N_POINTS = 100
+
+    # Manim units amount of going up/down in non-adjacent element swaps
+    SWAP_NONADJACENT_Y_CHANGE = 1.5
+
+    # Resolution for path traced while swapping nonadjacent list els
+    SWAP_NONADJACENT_N_POINTS = 1000
 
     def __init__(self, initial_list):
         self.lst = initial_list
@@ -27,18 +31,59 @@ class AnimatedList:
     def swap_positions(self, i, j):
         self.lst[i], self.lst[j] = self.lst[j], self.lst[i]
         self.el_lst[i], self.el_lst[j] = self.el_lst[j], self.el_lst[i]
-        # if abs(i - j) == 1:
-        #     return self._swap_list_els_adjacent(self.el_lst[i], self.el_lst[j])
-        # else:
-        # return [ApplyFunction(lambda x: x.shift(UP) and x.shift(LEFT), self.el_lst[2].vgroup)]
-        pmo = PMobject()
-        pmo.add_points([(1, 0.01 * i, 0) for i in range(1, 100)])
-        return [MoveAlongPath(self.el_lst[1].vgroup, pmo)]
+        if abs(i - j) == 1:
+            return self._swap_list_els_adjacent(self.el_lst[i], self.el_lst[j])
 
-    def make_path(self, frm, to, y_sign):
+        pmo_1 = self._make_path_non_adjacent_swap(self.el_lst[i], self.el_lst[j], 1)
+        pmo_2 = self._make_path_non_adjacent_swap(self.el_lst[j], self.el_lst[i], -1)
+        return [
+            MoveAlongPath(self.el_lst[i].vgroup, pmo_1),
+            MoveAlongPath(self.el_lst[j].vgroup, pmo_2)
+        ]
+
+    def _make_path_non_adjacent_swap(self, frm_el: ListElement, to_el: ListElement, y_sign: int):
         pmo = PMobject()
-        for i in range(self.SWAP_NONADJACENT_N_POINTS//4):
-            # pmo.add_points(*np.)
+        frm_x = frm_el.vgroup.get_x()
+        to_x = to_el.vgroup.get_x()
+        baseline_y = frm_el.vgroup.get_y()
+
+        total_distance = abs(frm_x - to_x) + self.SWAP_NONADJACENT_Y_CHANGE * 2
+        y_climb_proportion = total_distance / self.SWAP_NONADJACENT_Y_CHANGE
+        n_points_climb = self.SWAP_NONADJACENT_N_POINTS // y_climb_proportion
+        n_points_x = self.SWAP_NONADJACENT_N_POINTS - n_points_climb
+
+        # better - https://numpy.org/doc/stable/reference/generated/numpy.linspace.html#numpy.linspace
+
+        pmo.add_points([(
+            frm_x,
+            (baseline_y
+             + (i / int(n_points_climb / 2))
+             * self.SWAP_NONADJACENT_Y_CHANGE
+             * y_sign),
+            0)
+            for i in range(int(n_points_climb / 2))
+        ])
+
+        pmo.add_points([(
+            frm_x + (i / n_points_x) * (to_x - frm_x),
+            (baseline_y
+             + self.SWAP_NONADJACENT_Y_CHANGE
+             * y_sign),
+            0)
+            for i in range(int(n_points_x))
+        ])
+
+        pmo.add_points([(
+            to_x,
+            (baseline_y
+             + self.SWAP_NONADJACENT_Y_CHANGE * y_sign
+             + (i / int(n_points_climb / 2))
+             * self.SWAP_NONADJACENT_Y_CHANGE
+             * y_sign * -1),
+            0)
+            for i in range(int(n_points_climb / 2))
+        ])
+        return pmo
 
     @staticmethod
     def _swap_list_els_adjacent(c1: ListElement, c2: ListElement):

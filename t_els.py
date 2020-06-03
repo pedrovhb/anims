@@ -9,5 +9,6 @@ class MyScene(Scene):
         el = AnimatedList([1, 3, 4, 9])
 
         self.play(ShowCreation(el.group))
-        self.play(*el.swap_positions(0, 1))
+        self.play(*el.swap_positions(0, 2))
+        self.play(*el.swap_positions(1, 2))
         self.wait(2)
