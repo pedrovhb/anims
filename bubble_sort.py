@@ -4,7 +4,7 @@ while True:
     swapped = False
 
     for i in range(len(shuffled_arr) - 1):
-        if shuffled_arr[i] < shuffled_arr[i + 1]:
+        if shuffled_arr[i] > shuffled_arr[i + 1]:
             swapped = True
             shuffled_arr[i], shuffled_arr[i + 1] = shuffled_arr[i + 1], shuffled_arr[i]
 

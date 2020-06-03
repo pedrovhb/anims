@@ -1,3 +1,5 @@
+from itertools import chain
+
 from manim import *
 
 from render_code import RenderedCodeWithHighlight, VariablesTracker
@@ -18,6 +20,7 @@ class BubbleSort(Scene):
         code.group.shift(LEFT * 1)
 
         variables = VariablesTracker()
+        variables.group.shift(UP * 5 + RIGHT)
 
         self.bring_to_back(variables.highlight_rect)
         self.play(ShowCreation(variables.group))
@@ -31,8 +34,10 @@ class BubbleSort(Scene):
         self.play(code.animate_highlight_line(1))
         self.play(*variables.update_variable(self, VAR_shuffled_array, [4, 5, 0, 2, 6, 7, 9]))
 
-        el_list = AnimatedList([1, 3, 4, 9])
+        el_list = AnimatedList([4, 5, 0, 2, 6, 7, 9])
+        el_list.group.shift(DOWN * 2)
         self.play(ShowCreation(el_list.group))
+        el_list_created = False
 
         while True:
             self.play(code.animate_highlight_line(3))
@@ -45,17 +50,25 @@ class BubbleSort(Scene):
                 self.play(code.animate_highlight_line(6))
                 self.play(*variables.update_variable(self, VAR_i, i))
 
+                if not el_list_created:
+                    el_list.set_highlight_rect_no_anim(i, i + 1)
+                    self.play(ShowCreation(el_list.highlight_rect))
+                    el_list_created = True
+                else:
+                    self.play(*el_list.set_highlight_rect(i, i + 1))
+
                 self.play(code.animate_highlight_line(7))
-                if shuffled_arr[i] < shuffled_arr[i + 1]:
+                if shuffled_arr[i] > shuffled_arr[i + 1]:
                     swapped = True
                     self.play(code.animate_highlight_line(8))
                     self.play(*variables.update_variable(self, VAR_swapped, swapped))
 
                     shuffled_arr[i], shuffled_arr[i + 1] = shuffled_arr[i + 1], shuffled_arr[i]
                     self.play(code.animate_highlight_line(9))
-                    self.play(*variables.update_variable(self, VAR_shuffled_array, shuffled_arr))
-
-                return
+                    self.play(*chain(
+                        variables.update_variable(self, VAR_shuffled_array, shuffled_arr),
+                        el_list.swap_positions(i, i + 1)
+                    ))
 
             self.play(code.animate_highlight_line(11))
             if not swapped:

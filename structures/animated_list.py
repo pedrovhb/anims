@@ -20,7 +20,7 @@ class AnimatedList:
         self.el_lst = [ListElement(val) for val in self.lst]
         self.highlight_rect = Rectangle()
 
-        all_submobjects = [self.highlight_rect]
+        all_submobjects = []
         for submobject_lst in (chain(el.vgroup.submobjects) for el in self.el_lst):
             all_submobjects.extend(submobject_lst)
         self.group = VGroup(*all_submobjects)
