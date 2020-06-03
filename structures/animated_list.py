@@ -6,6 +6,7 @@ from structures import ListElement
 
 
 class AnimatedList:
+    HIGHLIGHT_RECT_HEIGHT_FACTOR = 1.3
     DISTANCE_BETWEEN_ELS = RIGHT * 0.3
 
     # Manim units amount of going up/down in non-adjacent element swaps
@@ -17,8 +18,9 @@ class AnimatedList:
     def __init__(self, initial_list):
         self.lst = initial_list
         self.el_lst = [ListElement(val) for val in self.lst]
+        self.highlight_rect = Rectangle()
 
-        all_submobjects = []
+        all_submobjects = [self.highlight_rect]
         for submobject_lst in (chain(el.vgroup.submobjects) for el in self.el_lst):
             all_submobjects.extend(submobject_lst)
         self.group = VGroup(*all_submobjects)
@@ -51,8 +53,6 @@ class AnimatedList:
         y_climb_proportion = total_distance / self.SWAP_NONADJACENT_Y_CHANGE
         n_points_climb = self.SWAP_NONADJACENT_N_POINTS // y_climb_proportion
         n_points_x = self.SWAP_NONADJACENT_N_POINTS - n_points_climb
-
-        # better - https://numpy.org/doc/stable/reference/generated/numpy.linspace.html#numpy.linspace
 
         pmo.add_points([(
             frm_x,
@@ -97,3 +97,39 @@ class AnimatedList:
             CounterclockwiseTransform(c1.vgroup, c1_copy.vgroup),
             CounterclockwiseTransform(c2.vgroup, c2_copy.vgroup),
         ]
+
+    def show_passing_flash(self, i, j=None):
+        j = i if j is None else j
+        return [ShowPassingFlashAround(
+            Group(
+                self.el_lst[i].vgroup,
+                self.el_lst[j].vgroup),
+        )]
+
+    def set_highlight_rect(self, i, j=None):
+        j = i if j is None else j
+
+        def s(rect: Rectangle):
+            els = Group(
+                self.el_lst[i].vgroup,
+                self.el_lst[j].vgroup,
+            )
+            rect.set_height(els.get_height() * self.HIGHLIGHT_RECT_HEIGHT_FACTOR, stretch=True)
+            rect.set_width(els.get_width() + self.DISTANCE_BETWEEN_ELS[0], stretch=True)
+            rect.next_to(els.get_center(), ORIGIN)
+            return rect
+
+        return [ApplyFunction(s, self.highlight_rect)]
+
+    def set_highlight_rect_no_anim(self, i, j=None):
+        j = i if j is None else j
+        els = Group(
+            self.el_lst[i].vgroup,
+            self.el_lst[j].vgroup,
+        )
+        self.highlight_rect.set_height(els.get_height() * self.HIGHLIGHT_RECT_HEIGHT_FACTOR, stretch=True)
+        self.highlight_rect.set_width(els.get_width() + self.DISTANCE_BETWEEN_ELS[0], stretch=True)
+        self.highlight_rect.next_to(els.get_center(), ORIGIN)
+
+    def show_highlight_rect_in(self):
+        pass
